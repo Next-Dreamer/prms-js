@@ -19,7 +19,7 @@ export const store = {
 
   isFirstEdit: true,
   todayId: 1,
-
+  
   dateList: [
     {
       id: 1,
@@ -35,10 +35,10 @@ export function updateStorage() {
 
 export function initStore() {
   const storage = sessionStorage.getItem("store");
+
   if (!storage) updateStorage();
 
-  const { dateList, detailList, todayId, currentFunds, isFirstEdit } =
-    JSON.parse(storage);
+  const { dateList, detailList, todayId, currentFunds, isFirstEdit } = JSON.parse(storage);
 
   store.currentFunds = currentFunds;
   store.isFirstEdit = isFirstEdit;
@@ -49,14 +49,13 @@ export function initStore() {
 
 export function addNewHistory(newHistory) {
   try {
-    // TODO:
-    /**
-     * - store의 detailList 새로 갱신
-     * - store.currentFunds 새로 갱신
-     */
-    store.detailList = null;
-    store.currentFunds = null;
+    if(store.detailList[store.todayId]) {
+      store.detailList[store.todayId].push(newHistory);
+    } else {
+      store.detailList[store.todayId] = [newHistory];
+    }
 
+    store.currentFunds -= newHistory.amount;
     updateStorage();
     return true;
   } catch (error) {
@@ -67,12 +66,14 @@ export function addNewHistory(newHistory) {
 
 export function removeHistory(dateId, itemId) {
   try {
-    // TODO:
-    /**
-     * - store의 detailList 새로 갱신
-     * - store.currentFunds 새로 갱신
-     */
-    store.detailList[dateId] = null;
+    store.detailList[dateId] = store.detailList[dateId].filter(
+      ({ id, amount }) => {
+        if(id === Number(itemId)) {
+          store.currentFunds += amount;
+        }
+        return id !== Number(itemId);
+      }
+    );
 
     updateStorage();
     return true;
